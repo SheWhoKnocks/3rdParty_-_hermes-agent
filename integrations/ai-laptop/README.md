@@ -6,7 +6,7 @@ This optional integration belongs to the experimental Hermes branch, **not** to 
 
 | Configuration variable | Human-readable name | Used for | Where to find it | Needed when |
 | --- | --- | --- | --- | --- |
-| `LITELLM_MASTER_KEY` | **LiteLLM Proxy Master API Key** | Authenticates Hermes to the existing local LiteLLM inference proxy (models such as Quick Chat) | `/opt/ai-proxy/.env`, variable `LITELLM_MASTER_KEY` | Configuring Hermes inference or authenticated model diagnostics |
+| `LITELLM_MASTER_KEY` | **LiteLLM Proxy Master API Key** | Authenticates Hermes to the existing local LiteLLM inference proxy (models such as the proposed Chat alias) | `/opt/ai-proxy/.env`, variable `LITELLM_MASTER_KEY` | Configuring Hermes inference or authenticated model diagnostics |
 | `AGENT_RUNTIME_API_KEY` | **AI Laptop Agent Runtime Service API Key** | Authenticates the **read-only Hermes MCP adapter** to AI Laptop's Agent Runtime and authoritative project/reminder/calendar read endpoints | Usually `/opt/ai-proxy/.env`, variable `AGENT_RUNTIME_API_KEY`; verify the variable exists | Only when registering/testing the governed service-read adapter |
 | `HERMES_CUSTOM_127_0_0_1_4000_API_KEY` | **Hermes saved LiteLLM endpoint key** | Hermes' copy of the LiteLLM credential for the configured custom endpoint | `~/.hermes/.env`, written by `hermes setup model` | Normally reused; do not re-enter on every release |
 | `GITHUB_TOKEN` | **Optional GitHub API token** | Higher API rate limits for Hermes Skills Hub/GitHub integrations | User-created GitHub token with minimal scope | Not required for the local pilot |
@@ -32,8 +32,10 @@ python3 integrations/ai-laptop/pilot_setup.py
 That is a **dry run**. To apply only a bounded Hermes context override after seeing the plan:
 
 ```bash
-python3 integrations/ai-laptop/pilot_setup.py --apply --context 4096
+python3 integrations/ai-laptop/pilot_setup.py --apply --context 65536
 ```
+
+**Do not apply the 65,536-token metadata override until the actual Ollama model serving Chat has been configured and observed at 65,536 or higher.** Hermes enforces a minimum 64,000-token window and explicitly rejects 4,096. Merely editing Hermes config does not increase the model server context. The Chat alias is a proposed LiteLLM change, not yet deployed. Retain Quick Chat for existing clients until the new model route passes validation.
 
 The apply command backs up `~/.hermes/config.yaml` and changes only `model.context_length`. All other settings, credentials, gateway/service state, Docker permissions, and Open WebUI routes remain unchanged.
 
