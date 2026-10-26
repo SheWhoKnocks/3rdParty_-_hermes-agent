@@ -11,7 +11,7 @@ import sys
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apply", action="store_true", help="Back up Hermes config and apply only context override")
-    parser.add_argument("--context", type=int, choices=[4096, 8192, 16384, 32768], default=4096)
+    parser.add_argument("--context", type=int, choices=[65536, 131072], default=65536)
     args = parser.parse_args()
     config = Path.home() / ".hermes" / "config.yaml"
     if not config.is_file() or not shutil.which("hermes"):
@@ -20,7 +20,8 @@ def main():
     result = subprocess.run(["hermes", "config", "get", "model.context_length"], capture_output=True, text=True, timeout=20)
     print("Hermes config:", config)
     print("Current context:", result.stdout.strip() if result.returncode == 0 else "unavailable")
-    print("Requested context:", args.context)
+    print("Requested Hermes minimum-compliant context:", args.context)
+    print("WARNING: This does not configure Ollama or LiteLLM actual context. Verify backend allocation >= requested context first.")
     print("Credential definitions:")
     print("  LITELLM_MASTER_KEY = LiteLLM Proxy Master API Key (Hermes model inference).")
     print("  AGENT_RUNTIME_API_KEY = AI Laptop Agent Runtime Service API Key (MCP personal-data reads).")
@@ -40,7 +41,7 @@ def main():
         os.chmod(config, 0o600)
         print("Configuration restored after error.", file=sys.stderr)
         return applied.returncode
-    print("Updated context; provider, keys, toolsets, Docker, systemd, routing unchanged.")
+    print("Updated Hermes metadata only; backend context must be configured separately and verified. Other settings unchanged.")
     return 0
 
 if __name__ == "__main__":
